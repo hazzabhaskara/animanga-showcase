@@ -1,0 +1,10 @@
+﻿.agents/
+tests/
+__pycache__/
+*.pyc
+ORIGINAL_REQUEST.md
+PROJECT.md
+TEST_INFRA.md
+TEST_READY.md
+*.log
+~$*.xlsx

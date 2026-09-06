@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Animanga Showcase | Hazza's Anime &amp; Manga Catalog</title>
+  <meta name="description" content="Modern, interactive Notion and Airtable style anime and manga showcase with instant search, multi-faceted filtering, and detailed metadata." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ====================================================================
+       App Header: Notion / Airtable Slate & Indigo Header with KPIs
+       ==================================================================== -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-branding">
+        <div class="branding-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+        </div>
+        <div class="branding-text">
+          <h1>
+            ANIMANGA SHOWCASE
+            <span class="badge-subtle">PRO</span>
+          </h1>
+          <p>Hazza's Personal MyAnimeList Database &bull; Interactive Catalog</p>
+        </div>
+      </div>
+
+      <!-- Live KPI Metrics Bar -->
+      <div class="header-kpi-bar" id="header-kpi-container" aria-label="Catalog Summary KPIs">
+        <!-- Injected dynamically via app.js -->
+      </div>
+
+      <!-- Header Action Controls -->
+      <div class="header-actions">
+        <button id="theme-toggle-btn" class="icon-btn" title="Toggle Dark / Light Mode" aria-label="Toggle Dark / Light Mode">
+          <!-- Sun Icon (shown in dark mode) -->
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <!-- Moon Icon (shown in light mode) -->
+          <svg class="icon-moon" style="display: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====================================================================
+       Control Toolbar: Search, Filters, Sorters & View Switcher
+       ==================================================================== -->
+  <section class="toolbar-container" aria-label="Catalog Toolbar &amp; Filters">
+    <div class="toolbar-inner">
+      <div class="toolbar-primary">
+        <div class="toolbar-left">
+          <!-- Instant Search Box -->
+          <div class="search-wrapper">
+            <span class="search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </span>
+            <input type="text"
+                   id="search-input"
+                   class="search-input"
+                   placeholder="Search title, studio, author, genre..."
+                   autocomplete="off"
+                   spellcheck="false"
+                   aria-label="Search catalog" />
+            <div class="search-actions">
+              <button id="search-clear-btn" class="search-clear-btn" title="Clear search query" aria-label="Clear search">
+                &times;
+              </button>
+              <kbd class="search-badge">/</kbd>
+            </div>
+          </div>
+
+          <!-- Media Type Filter Tabs -->
+          <div class="type-segmented-control" role="tablist" aria-label="Filter by Media Type">
+            <button class="type-tab-btn active" data-type="all" role="tab" aria-selected="true">
+              All <span class="tab-count" id="tab-count-all">266</span>
+            </button>
+            <button class="type-tab-btn" data-type="anime" role="tab" aria-selected="false">
+              Anime <span class="tab-count" id="tab-count-anime">219</span>
+            </button>
+            <button class="type-tab-btn" data-type="manga" role="tab" aria-selected="false">
+              Manga <span class="tab-count" id="tab-count-manga">47</span>
+            </button>
+          </div>
+
+          <!-- Multi-Faceted Filters -->
+          <div class="filters-group">
+            <!-- Status Filter -->
+            <div class="select-wrapper">
+              <select id="status-select" class="filter-select" aria-label="Filter by Status">
+                <option value="all">All Statuses</option>
+                <option value="Completed">Completed</option>
+                <option value="Watching/Reading">Watching / Reading</option>
+                <option value="Plan to Watch/Read">Plan to Watch / Read</option>
+                <option value="On-Hold">On-Hold</option>
+                <option value="Dropped">Dropped</option>
+              </select>
+              <span class="select-arrow" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+              </span>
+            </div>
+
+            <!-- Score Tier Filter -->
+            <div class="select-wrapper">
+              <select id="score-select" class="filter-select" aria-label="Filter by Score Tier">
+                <option value="all">All Scores</option>
+                <option value="masterpiece">&starf; 9-10 Masterpiece</option>
+                <option value="recommended">&starf; 7-8 Recommended</option>
+                <option value="average">&starf; 5-6 Average</option>
+                <option value="low">&starf; 1-4 Low</option>
+                <option value="unrated">Unrated (0)</option>
+              </select>
+              <span class="select-arrow" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+              </span>
+            </div>
+
+            <!-- Genre Filter -->
+            <div class="select-wrapper">
+              <select id="genre-select" class="filter-select" aria-label="Filter by Genre">
+                <option value="all">All Genres</option>
+                <!-- Populated dynamically via app.js -->
+              </select>
+              <span class="select-arrow" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar-right">
+          <!-- Sort Dropdown -->
+          <div class="select-wrapper">
+            <select id="sort-select" class="filter-select" aria-label="Sort catalog entries">
+              <option value="title_asc">Title (A &rarr; Z)</option>
+              <option value="title_desc">Title (Z &rarr; A)</option>
+              <option value="score_desc">Personal Score (High &rarr; Low)</option>
+              <option value="score_asc">Personal Score (Low &rarr; High)</option>
+              <option value="global_desc">Global Score (High &rarr; Low)</option>
+              <option value="progress_desc">Progress % (High &rarr; Low)</option>
+              <option value="type_asc">Format / Type</option>
+            </select>
+            <span class="select-arrow" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            </span>
+          </div>
+
+          <!-- Dual View Mode Toggle -->
+          <div class="view-toggle-group" role="group" aria-label="Switch Layout View">
+            <button id="view-gallery-btn" class="view-btn active" title="Gallery / Visual Grid View (G)" aria-label="Gallery View">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span>Cards</span>
+            </button>
+            <button id="view-table-btn" class="view-btn" title="Airtable-Style Table View (T)" aria-label="Table View">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>Table</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secondary Toolbar: Active Filter Chips & Counter -->
+      <div class="toolbar-secondary">
+        <div id="active-filters-container" class="active-filters-list" style="display: none;">
+          <div id="active-chips-list" class="active-filters-list"></div>
+        </div>
+        <div id="results-counter" class="results-counter">
+          Showing <strong>266</strong> of <strong>266</strong> titles
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       Main Content Area: Gallery View & Table View Containers
+       ==================================================================== -->
+  <main class="main-content">
+    <!-- Gallery / Grid View -->
+    <div id="gallery-view-container" class="gallery-grid" role="region" aria-label="Gallery Showcase">
+      <!-- Cards rendered dynamically via app.js -->
+    </div>
+
+    <!-- Table View -->
+    <div id="table-view-container" style="display: none;" role="region" aria-label="Spreadsheet Database">
+      <!-- Table rendered dynamically via app.js -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="empty-state" role="status">
+      <div class="empty-state-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <line x1="8" y1="11" x2="14" y2="11"></line>
+        </svg>
+      </div>
+      <h3 class="empty-state-title">No matching titles found</h3>
+      <p class="empty-state-desc">Try clearing search keywords or adjusting status/score filters.</p>
+      <button class="reset-filters-btn" onclick="document.getElementById('search-clear-btn').click();" style="display: inline-flex; margin: 0 auto; font-size: 0.875rem; padding: 0.4rem 1rem; background: var(--accent-surface); color: var(--accent-text);">
+        Clear Search &amp; Filters
+      </button>
+    </div>
+  </main>
+
+  <!-- ====================================================================
+       Slide-Over Detail Drawer & Modal Dialog
+       ==================================================================== -->
+  <div id="drawer-backdrop" class="drawer-backdrop" aria-hidden="true"></div>
+  <aside id="drawer-panel" class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawer-title-main">
+    <!-- Drawer Header Banner with Controls -->
+    <div class="drawer-banner">
+      <img id="drawer-banner-img" class="drawer-banner-img" src="" alt="" />
+      <div class="drawer-banner-gradient"></div>
+
+      <!-- Navigation Arrows (Previous / Next) -->
+      <div class="drawer-nav-group">
+        <button id="drawer-prev-btn" class="drawer-nav-btn" title="Previous entry (&larr;)" aria-label="Previous item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button id="drawer-next-btn" class="drawer-nav-btn" title="Next entry (&rarr;)" aria-label="Next item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Close Button -->
+      <button id="drawer-close-btn" class="drawer-close-btn" title="Close drawer (Esc)" aria-label="Close detail drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Drawer Body Content -->
+    <div class="drawer-content">
+      <!-- Poster Artwork & Title Section -->
+      <div class="drawer-hero">
+        <div class="drawer-poster-wrap">
+          <img id="drawer-poster-img" class="drawer-poster-img" src="" alt="" />
+        </div>
+        <div class="drawer-hero-info">
+          <span id="drawer-format-pill" class="type-pill anime" style="align-self: flex-start;">TV Series</span>
+          <h2 id="drawer-title-main" class="drawer-title-main">—</h2>
+          <div id="drawer-title-sub" class="drawer-title-sub">—</div>
+        </div>
+      </div>
+
+      <!-- Personal vs Global Score Comparison Widget -->
+      <div class="score-comparison-card">
+        <div class="score-comparison-header">Score Comparison</div>
+        <div class="score-cards-row">
+          <div class="score-stat-box">
+            <span class="score-stat-label">Personal Rating</span>
+            <div id="drawer-score-my" class="score-stat-value">
+              &starf; 8 <span class="max">/ 10</span>
+            </div>
+          </div>
+          <div class="score-stat-box">
+            <span class="score-stat-label">Community Score (MAL)</span>
+            <div id="drawer-score-global" class="score-stat-value">
+              &starf; 8.41 <span class="max">/ 10</span>
+            </div>
+          </div>
+        </div>
+        <div id="drawer-score-diff" class="score-divergence-pill equal">
+          Rating comparison
+        </div>
+      </div>
+
+      <!-- Watch/Read Status & Progress -->
+      <div class="metadata-grid">
+        <div class="metadata-item">
+          <span class="metadata-label">Current Status</span>
+          <div id="drawer-status-val">Completed</div>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">User Dates</span>
+          <div id="drawer-dates-val" class="metadata-value" style="font-size: 0.8125rem;">—</div>
+        </div>
+        <div class="metadata-item" style="grid-column: span 2;">
+          <span class="metadata-label">Progress Tracking</span>
+          <div id="drawer-progress-text" class="metadata-value" style="font-size: 0.8125rem; margin-top: 0.2rem;">
+            22 of 22 episodes (100%)
+          </div>
+          <div class="progress-track" style="margin-top: 0.4rem; height: 8px;">
+            <div id="drawer-progress-fill" class="progress-fill completed" style="width: 100%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Core Production Metadata Grid -->
+      <div class="metadata-grid">
+        <div class="metadata-item">
+          <span id="drawer-creator-label" class="metadata-label">Studio</span>
+          <span id="drawer-creator-val" class="metadata-value">—</span>
+        </div>
+        <div class="metadata-item">
+          <span id="drawer-total-label" class="metadata-label">Total Length</span>
+          <span id="drawer-total-val" class="metadata-value">—</span>
+        </div>
+      </div>
+
+      <!-- Official Genres (Clickable to Filter) -->
+      <div>
+        <div class="drawer-section-title">Official Genres</div>
+        <div id="drawer-genres-container" class="drawer-genres-wrap">
+          <!-- Populated dynamically via app.js -->
+        </div>
+      </div>
+
+      <!-- Synopsis Text -->
+      <div>
+        <div class="drawer-section-title">Synopsis</div>
+        <p id="drawer-synopsis-text" class="synopsis-text">
+          Loading synopsis...
+        </p>
+      </div>
+    </div>
+
+    <!-- Drawer Footer Actions -->
+    <div class="drawer-footer">
+      <a id="drawer-mal-btn" href="#" target="_blank" rel="noopener noreferrer" class="external-link-btn">
+        <span>View on MyAnimeList</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ====================================================================
+       Data & Application Scripts (file:// compatible, zero CDN dependencies)
+       ==================================================================== -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
