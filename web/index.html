@@ -38,6 +38,39 @@
 
       <!-- Header Action Controls -->
       <div class="header-actions">
+        <button id="quiz-btn" class="action-feature-btn" title="Cari Rekomendasi Berdasarkan Mood" aria-label="Rekomendasi Mood">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <span>Rekomendasi</span>
+        </button>
+        <button id="matcher-btn" class="action-feature-btn" title="Cek Kecocokan Selera dengan Hazza" aria-label="Taste Matcher">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span>Taste Matcher</span>
+        </button>
+        <button id="share-card-btn" class="action-feature-btn" title="Bagikan Kartu Profil / Share Card" aria-label="Share Card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+          <span>Share</span>
+        </button>
+        <a href="Animanga_Showcase.xlsx" download="Animanga_Showcase.xlsx" class="btn-download-excel" title="Download Styled Excel Workbook (.xlsx)" aria-label="Download Excel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Excel</span>
+        </a>
         <button id="theme-toggle-btn" class="icon-btn" title="Toggle Dark / Light Mode" aria-label="Toggle Dark / Light Mode">
           <!-- Sun Icon (shown in dark mode) -->
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -365,6 +398,168 @@
       </a>
     </div>
   </aside>
+
+  <!-- ====================================================================
+       Interactive Modal 1: Mood & Recommendation Engine
+       ==================================================================== -->
+  <div id="quiz-modal" class="custom-modal-overlay" style="display: none;" aria-hidden="true" role="dialog">
+    <div class="custom-modal-box">
+      <div class="custom-modal-header">
+        <div class="custom-modal-title-wrap">
+          <span class="custom-modal-icon">✨</span>
+          <div>
+            <h3>Rekomendasi Mood dari Hazza</h3>
+            <p>Pilih suasana hati yang sedang kamu cari hari ini:</p>
+          </div>
+        </div>
+        <button class="custom-modal-close" id="quiz-modal-close" aria-label="Tutup">&times;</button>
+      </div>
+      <div class="custom-modal-body">
+        <div class="mood-chips-grid">
+          <button class="mood-chip-btn active" data-mood="cry">
+            <span class="mood-emoji">😭</span>
+            <span class="mood-text">Emotional &amp; Nangis</span>
+          </button>
+          <button class="mood-chip-btn" data-mood="mind">
+            <span class="mood-emoji">🤯</span>
+            <span class="mood-text">Mind-Bending &amp; Thriller</span>
+          </button>
+          <button class="mood-chip-btn" data-mood="romcom">
+            <span class="mood-emoji">🥰</span>
+            <span class="mood-text">Romcom &amp; Wholesome</span>
+          </button>
+          <button class="mood-chip-btn" data-mood="dark">
+            <span class="mood-emoji">⚔️</span>
+            <span class="mood-text">Dark Fantasy &amp; Epik</span>
+          </button>
+          <button class="mood-chip-btn" data-mood="psych">
+            <span class="mood-emoji">🎭</span>
+            <span class="mood-text">Psikologis Mendalam</span>
+          </button>
+          <button class="mood-chip-btn" data-mood="chill">
+            <span class="mood-emoji">☕</span>
+            <span class="mood-text">Santai &amp; Slice of Life</span>
+          </button>
+        </div>
+
+        <div class="mood-results-title">Rekomendasi Masterpiece untuk Mood Ini:</div>
+        <div id="mood-recommendations-list" class="mood-rec-grid">
+          <!-- Populated dynamically via app.js -->
+        </div>
+      </div>
+      <div class="custom-modal-footer">
+        <button id="apply-mood-to-catalog" class="btn-primary-action">
+          <span>Terapkan Filter Ini ke Katalog Utama</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       Interactive Modal 2: Friend Taste Matcher
+       ==================================================================== -->
+  <div id="matcher-modal" class="custom-modal-overlay" style="display: none;" aria-hidden="true" role="dialog">
+    <div class="custom-modal-box">
+      <div class="custom-modal-header">
+        <div class="custom-modal-title-wrap">
+          <span class="custom-modal-icon">🤝</span>
+          <div>
+            <h3>Seberapa Cocok Selera Kamu dengan Hazza?</h3>
+            <p>Centang judul anime &amp; manga favorit yang pernah kamu nikmati:</p>
+          </div>
+        </div>
+        <button class="custom-modal-close" id="matcher-modal-close" aria-label="Tutup">&times;</button>
+      </div>
+      <div class="custom-modal-body">
+        <div class="match-score-card">
+          <div class="match-score-circle" id="match-percentage-badge">0%</div>
+          <div class="match-score-info">
+            <h4 id="match-verdict-title">Pilih judul di bawah</h4>
+            <p id="match-verdict-desc">Centang beberapa judul di bawah untuk menghitung tingkat kecocokan selera wibu kamu dengan Hazza.</p>
+          </div>
+        </div>
+
+        <div class="matcher-checklist-grid" id="matcher-checklist">
+          <!-- Populated dynamically via app.js -->
+        </div>
+      </div>
+      <div class="custom-modal-footer">
+        <button id="copy-match-result-btn" class="btn-secondary-action">
+          <span>📋 Salin Hasil Match untuk Dikirim ke Hazza</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       Interactive Modal 3: Share Taste Card (Social Profile)
+       ==================================================================== -->
+  <div id="share-card-modal" class="custom-modal-overlay" style="display: none;" aria-hidden="true" role="dialog">
+    <div class="custom-modal-box">
+      <div class="custom-modal-header">
+        <div class="custom-modal-title-wrap">
+          <span class="custom-modal-icon">📇</span>
+          <div>
+            <h3>Hazza's Otaku Taste Card</h3>
+            <p>Bagikan kartu profil ini ke teman atau media sosial:</p>
+          </div>
+        </div>
+        <button class="custom-modal-close" id="share-card-modal-close" aria-label="Tutup">&times;</button>
+      </div>
+      <div class="custom-modal-body">
+        <div class="social-taste-card" id="social-taste-card-element">
+          <div class="card-hero-banner">
+            <div class="card-hero-title">HAZZA BHASKARA</div>
+            <div class="card-hero-badge">Curated Anime &amp; Manga Vault</div>
+          </div>
+          <div class="card-stats-row">
+            <div class="card-stat-col">
+              <span class="stat-num">219</span>
+              <span class="stat-lbl">Anime</span>
+            </div>
+            <div class="card-stat-col">
+              <span class="stat-num">47</span>
+              <span class="stat-lbl">Manga</span>
+            </div>
+            <div class="card-stat-col">
+              <span class="stat-num">227</span>
+              <span class="stat-lbl">Completed</span>
+            </div>
+            <div class="card-stat-col">
+              <span class="stat-num">8.1</span>
+              <span class="stat-lbl">Avg Score</span>
+            </div>
+          </div>
+          <div class="card-hall-of-fame">
+            <div class="hall-title">🏆 ALL-TIME MASTERPIECES (SCORE 10):</div>
+            <div class="hall-badges-wrap">
+              <span class="hall-badge">Clannad: After Story</span>
+              <span class="hall-badge">Steins;Gate</span>
+              <span class="hall-badge">Berserk</span>
+              <span class="hall-badge">Oyasumi Punpun</span>
+              <span class="hall-badge">Kaguya-sama</span>
+              <span class="hall-badge">Shingeki no Kyojin</span>
+            </div>
+          </div>
+          <div class="card-signature-genres">
+            <span class="genre-tag">Drama</span>
+            <span class="genre-tag">Psychological</span>
+            <span class="genre-tag">Sci-Fi</span>
+            <span class="genre-tag">Romance</span>
+            <span class="genre-tag">Mystery</span>
+          </div>
+        </div>
+      </div>
+      <div class="custom-modal-footer">
+        <button id="copy-card-text-btn" class="btn-primary-action">
+          <span>📋 Salin Ringkasan Teks (WA / Discord)</span>
+        </button>
+        <button id="copy-web-link-btn" class="btn-secondary-action">
+          <span>🔗 Salin Link Web</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ====================================================================
        Data & Application Scripts (file:// compatible, zero CDN dependencies)

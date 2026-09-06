@@ -1178,6 +1178,8 @@
         }
       }
     });
+  }
+
   // --- Toast Notification Helper ---
   function showToast(msg) {
     let t = document.getElementById("app-toast");

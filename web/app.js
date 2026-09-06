@@ -1180,6 +1180,296 @@
     });
   }
 
+  // --- Toast Notification Helper ---
+  function showToast(msg) {
+    let t = document.getElementById("app-toast");
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "app-toast";
+      t.style.cssText = "position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1E293B;color:#F8FAFC;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 10px 25px rgba(0,0,0,0.5);border:1px solid #334155;z-index:9999;transition:opacity 0.3s;pointer-events:none;";
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = "1";
+    setTimeout(() => { t.style.opacity = "0"; }, 2500);
+  }
+
+  // --- Feature Modals Logic (Quiz, Matcher, Share Card) ---
+  function initModalsAndFeatures() {
+    // 1. Modal Triggers & Elements
+    const quizBtn = document.getElementById("quiz-btn");
+    const matcherBtn = document.getElementById("matcher-btn");
+    const shareCardBtn = document.getElementById("share-card-btn");
+
+    const quizModal = document.getElementById("quiz-modal");
+    const matcherModal = document.getElementById("matcher-modal");
+    const shareCardModal = document.getElementById("share-card-modal");
+
+    function openModal(modal) {
+      if (!modal) return;
+      modal.style.display = "flex";
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModal(modal) {
+      if (!modal) return;
+      modal.style.display = "none";
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    // Close buttons
+    document.getElementById("quiz-modal-close")?.addEventListener("click", () => closeModal(quizModal));
+    document.getElementById("matcher-modal-close")?.addEventListener("click", () => closeModal(matcherModal));
+    document.getElementById("share-card-modal-close")?.addEventListener("click", () => closeModal(shareCardModal));
+
+    // Close on backdrop click
+    [quizModal, matcherModal, shareCardModal].forEach(modal => {
+      if (!modal) return;
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal(modal);
+      });
+    });
+
+    // Close on Escape key
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeModal(quizModal);
+        closeModal(matcherModal);
+        closeModal(shareCardModal);
+      }
+    });
+
+    // --- Feature 1: Mood Quiz ---
+    const moodPresets = {
+      cry: {
+        filterGenre: "Drama",
+        titleKeywords: ["clannad", "anohana", "punpun", "solanin", "angel beats", "takopii"],
+        name: "Emotional & Nangis"
+      },
+      mind: {
+        filterGenre: "Sci-Fi",
+        titleKeywords: ["steins;gate", "monster", "shingeki", "shinsekai", "aku no hana"],
+        name: "Mind-Bending & Thriller"
+      },
+      romcom: {
+        filterGenre: "Romance",
+        titleKeywords: ["kaguya", "hanayome", "komi", "bocchi", "sakurai"],
+        name: "Romcom & Wholesome"
+      },
+      dark: {
+        filterGenre: "Action",
+        titleKeywords: ["berserk", "shingeki", "chainsaw", "vinland", "parasyte"],
+        name: "Dark Fantasy & Epik"
+      },
+      psych: {
+        filterGenre: "Psychological",
+        titleKeywords: ["punpun", "aku no hana", "solanin", "takopii", "kurosawa"],
+        name: "Psikologis Mendalam"
+      },
+      chill: {
+        filterGenre: "Slice of Life",
+        titleKeywords: ["3-gatsu", "bocchi", "barakamon", "yuru", "clannad"],
+        name: "Santai & Slice of Life"
+      }
+    };
+
+    let currentSelectedMood = "cry";
+
+    function renderMoodRecs(moodKey) {
+      const container = document.getElementById("mood-recommendations-list");
+      if (!container) return;
+      const preset = moodPresets[moodKey] || moodPresets.cry;
+      currentSelectedMood = moodKey;
+
+      const matches = state.allEntries
+        .filter(item => {
+          const score = parseInt(item.user_score, 10) || 0;
+          const titleLower = item.title.toLowerCase();
+          const matchKeyword = preset.titleKeywords.some(kw => titleLower.includes(kw));
+          const hasGenre = item.genres && item.genres.some(g => g.toLowerCase().includes(preset.filterGenre.toLowerCase()));
+          return (matchKeyword && score >= 8) || (hasGenre && score >= 9);
+        })
+        .sort((a, b) => (parseInt(b.user_score, 10) || 0) - (parseInt(a.user_score, 10) || 0))
+        .slice(0, 4);
+
+      container.innerHTML = matches.map(item => `
+        <div class="mood-rec-card" data-id="${item.id}">
+          <img class="mood-rec-thumb" src="${item.poster_url || ''}" alt="${escapeHtml(item.title)}" onerror="this.src='${getPosterPlaceholder(item.title, item.media_type)}'" />
+          <div class="mood-rec-info">
+            <div class="mood-rec-title">${escapeHtml(item.title)}</div>
+            <div class="mood-rec-meta">
+              <span style="color: #FBBF24; font-weight: 700;">&starf; Skor Hazza: ${item.user_score}/10</span>
+              <span>&bull; ${escapeHtml(item.media_type.toUpperCase())}</span>
+              <span>&bull; ${escapeHtml((item.genres || []).slice(0, 2).join(', '))}</span>
+            </div>
+          </div>
+        </div>
+      `).join("");
+
+      container.querySelectorAll(".mood-rec-card").forEach(card => {
+        card.addEventListener("click", () => {
+          const id = parseInt(card.dataset.id, 10);
+          const idx = state.filteredEntries.findIndex(e => e.id === id);
+          closeModal(quizModal);
+          if (idx >= 0) {
+            openDetailDrawer(idx);
+          } else {
+            resetAllFilters();
+            const newIdx = state.filteredEntries.findIndex(e => e.id === id);
+            if (newIdx >= 0) openDetailDrawer(newIdx);
+          }
+        });
+      });
+    }
+
+    document.querySelectorAll(".mood-chip-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".mood-chip-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        renderMoodRecs(btn.dataset.mood);
+      });
+    });
+
+    document.getElementById("apply-mood-to-catalog")?.addEventListener("click", () => {
+      const preset = moodPresets[currentSelectedMood];
+      closeModal(quizModal);
+      if (preset) {
+        resetAllFilters();
+        const genreSelect = document.getElementById("genre-select");
+        const scoreSelect = document.getElementById("score-select");
+        if (genreSelect) {
+          const opt = Array.from(genreSelect.options).find(o => o.value.toLowerCase() === preset.filterGenre.toLowerCase());
+          if (opt) {
+            genreSelect.value = opt.value;
+            state.filters.genre = opt.value;
+          }
+        }
+        if (scoreSelect) {
+          scoreSelect.value = "masterpiece";
+          state.filters.scoreTier = "masterpiece";
+        }
+        applyFiltersAndSort();
+      }
+    });
+
+    quizBtn?.addEventListener("click", () => {
+      openModal(quizModal);
+      renderMoodRecs(currentSelectedMood);
+    });
+
+    // --- Feature 2: Friend Taste Matcher ---
+    const iconicTitles = [
+      "Steins;Gate",
+      "Clannad: After Story",
+      "Berserk",
+      "Oyasumi Punpun",
+      "Kaguya-sama wa Kokurasetai: Ultra Romantic",
+      "Shingeki no Kyojin Season 3 Part 2",
+      "Bocchi the Rock!",
+      "Monster",
+      "Aku no Hana",
+      "3-gatsu no Lion",
+      "Ano Hi Mita Hana no Namae wo Bokutachi wa Mada Shiranai.",
+      "5-toubun no Hanayome",
+      "Solanin",
+      "Takopii no Genzai",
+      "Angel Beats!",
+      "Komi-san wa, Comyushou desu."
+    ];
+
+    function renderMatcher() {
+      const checklist = document.getElementById("matcher-checklist");
+      if (!checklist) return;
+      checklist.innerHTML = iconicTitles.map((title, i) => `
+        <label class="matcher-check-item">
+          <input type="checkbox" data-index="${i}" class="matcher-cb" />
+          <span>${escapeHtml(title)}</span>
+        </label>
+      `).join("");
+
+      checklist.querySelectorAll(".matcher-cb").forEach(cb => {
+        cb.addEventListener("change", calculateMatch);
+      });
+      calculateMatch();
+    }
+
+    function calculateMatch() {
+      const checkedCount = document.querySelectorAll(".matcher-cb:checked").length;
+      let pct = 0;
+      let title = "Pilih judul di atas";
+      let desc = "Centang beberapa judul yang pernah kamu nikmati untuk melihat tingkat kecocokan.";
+
+      if (checkedCount > 0) {
+        pct = Math.min(100, Math.round((checkedCount / 10) * 100));
+        if (pct <= 30) {
+          title = "Level 1: Selera Kita Berbeda Server 🍃";
+          desc = "Kalian punya preferensi berbeda, tapi Hazza sangat merekomendasikan tonton Steins;Gate atau baca Punpun!";
+        } else if (pct <= 60) {
+          title = "Level 2: Lumayan Nyambung! 🍿";
+          desc = "Kalian sama-sama menikmati beberapa anime/manga hits berkualitas.";
+        } else if (pct <= 85) {
+          title = "Level 3: Satu Frekuensi Selera Keren! 🔥";
+          desc = "Kalian punya radar selera yang mirip, terutama di cerita emosional dan plot berbobot.";
+        } else {
+          title = "Level 4: SOULMATE WIBU SEJATI! 👑";
+          desc = "Selera kamu dan Hazza 100% identik! Sama-sama penikmat drama psikologis dan masterpiece sejati.";
+        }
+      }
+
+      const badge = document.getElementById("match-percentage-badge");
+      const titleEl = document.getElementById("match-verdict-title");
+      const descEl = document.getElementById("match-verdict-desc");
+
+      if (badge) badge.textContent = `${pct}%`;
+      if (titleEl) titleEl.textContent = title;
+      if (descEl) descEl.textContent = desc;
+    }
+
+    matcherBtn?.addEventListener("click", () => {
+      openModal(matcherModal);
+      renderMatcher();
+    });
+
+    document.getElementById("copy-match-result-btn")?.addEventListener("click", () => {
+      const badge = document.getElementById("match-percentage-badge")?.textContent || "0%";
+      const title = document.getElementById("match-verdict-title")?.textContent || "";
+      const text = `🤝 Hasil Taste Match dengan Hazza: ${badge}!\n"${title}"\nCek katalog selera Hazza di: ${window.location.href}`;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Hasil match berhasil disalin ke clipboard!");
+      }).catch(() => {
+        alert(text);
+      });
+    });
+
+    // --- Feature 3: Share Taste Card ---
+    shareCardBtn?.addEventListener("click", () => {
+      openModal(shareCardModal);
+    });
+
+    document.getElementById("copy-card-text-btn")?.addEventListener("click", () => {
+      const text = `📇 Hazza's Animanga Vault\n` +
+        `• 219 Anime & 47 Manga (227 Selesai)\n` +
+        `• Rata-rata Skor: 8.1 / 10\n` +
+        `• All-Time Masterpieces (10/10): Clannad: After Story, Steins;Gate, Berserk, Oyasumi Punpun, Kaguya-sama\n` +
+        `• Buka katalog interaktif: ${window.location.href}`;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Ringkasan profil berhasil disalin!");
+      }).catch(() => {
+        alert(text);
+      });
+    });
+
+    document.getElementById("copy-web-link-btn")?.addEventListener("click", () => {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        showToast("Link website berhasil disalin!");
+      }).catch(() => {
+        alert(window.location.href);
+      });
+    });
+  }
+
   // --- Main Bootstrapper ---
   function init() {
     initTheme();
@@ -1201,6 +1491,7 @@
     }
 
     attachEventListeners();
+    initModalsAndFeatures();
     applyFiltersAndSort();
   }
 
